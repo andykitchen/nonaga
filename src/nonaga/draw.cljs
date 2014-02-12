@@ -12,21 +12,27 @@
 ; state in an atom. This would allow for a win detection watcher that would
 ; spot that someone has one and would change the :event to end the game.
 
+(defn react-watcher [component]
+  (fn [key ref old-state new-state]
+    (.setState component #js {:wrapper ref})))
+
 (def board
   (create-class
     "getInitialState"
     (fn []
       (this-as this
-               (let [initial-state (-> n/initial-game
-                                       (assoc :event [:turn-began :red]))]
-                 #js {:wrapper initial-state})))
+               (let [state-atom
+                      (atom (-> n/initial-game
+                            (assoc :event [:turn-began :red])))]
+                 (add-watch state-atom :react (react-watcher this))
+                 #js {:wrapper state-atom})))
     "render"
     (fn []
       (this-as this
-               (let [state (.-wrapper (.-state this)) ]
+               (let [state @(.-wrapper (.-state this)) ]
                  (div {}
                       (p {:id "instructions"}
-                         (instructions (:event state)))      
+                         (instructions (:event state)))
                       (svg {:width 480 :height 480}
                            (draw-rings this state)
                            (draw-potential-rings this state)
@@ -35,6 +41,8 @@
                            (draw-marbles this state :blue)
                            (draw-valid-marble-moves this state))))))))
 
+(def main-board (board))
+
 (defn start []
-  (render-component (board) (js/document.getElementById "content")))
+  (render-component main-board (js/document.getElementById "content")))
 

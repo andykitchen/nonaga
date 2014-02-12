@@ -38,6 +38,6 @@
 
 (defn update-state [component update-fn]
   (fn []
-    (let [old-state (.-wrapper (.-state component))]
-      (.setState component #js {:wrapper (update-fn old-state)}))))
+    (let [state (.-wrapper (.-state component))]
+      (swap! state update-fn))))
 
