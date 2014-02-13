@@ -1,5 +1,6 @@
 (ns nonaga.draw.valid-marble-moves
   (:require [nonaga.rules.ball :as b]
+            [nonaga.rules.win  :as w]
             [nonaga.core :as n])
   (:use [nonaga.draw.util :only [hex->svg marble update-state event-type]]))
 
@@ -9,8 +10,8 @@
 
 (defn move-marble [component color from to]
   (update-state component
-    (fn [s] (let [s' (n/move-ball s color from to) 
-                  winner (b/find-winner s')]
+    (fn [s] (let [s' (n/move-ball s color from to)
+                  winner (w/find-winner s')]
       (if (nil? winner)
         (assoc s' :event [:marble-moved color])
         (assoc s' :event [:game-won winner]))))))
@@ -26,4 +27,3 @@
                  (move-marble component color selected hex)
                  (hex->svg hex)))
        (b/valid-destinations state selected)))
-
